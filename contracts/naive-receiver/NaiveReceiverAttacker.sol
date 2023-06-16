@@ -7,7 +7,6 @@ contract NaiveReceiverAttacker {
     function attack(
         uint256 loopCount,
         address lender,
-        address victim,
         IERC3156FlashBorrower receiver,
         address token,
         uint256 amount,
