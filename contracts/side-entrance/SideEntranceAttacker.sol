@@ -7,7 +7,7 @@ contract SideEntranceAttacker {
     address lender;
     address owner;
 
-    constructor(address _lender) {
+    constructor(address _lender){
         lender = _lender;
         owner = msg.sender;
     }
